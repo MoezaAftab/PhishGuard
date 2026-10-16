@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="report-header">
+    <div class="report-title-area">
+        <a href="{{ url_for('index') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Scanner</a>
+        <h1 class="report-title">Threat Assessment Report</h1>
+        <div class="report-meta">
+            <span><strong>Scan ID:</strong> <code>{{ report.scan_id }}</code></span>
+            <span><strong>Generated:</strong> {{ report.timestamp }}</span>
+        </div>
+    </div>
+    <div class="report-actions">
+        <a href="{{ url_for('export_report', scan_id=report.scan_id) }}" class="btn btn-outline">
+            <i class="fa-solid fa-download"></i> Export JSON
+        </a>
+        <button type="button" class="btn btn-outline" onclick="copyReportLink()">
+            <i class="fa-solid fa-share-nodes"></i> Share Link
+        </button>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fa-solid fa-rotate-right"></i> New Scan
+        </a>
+    </div>
+</div>
+
+<!-- Main Threat Overview Banner -->
+<div class="card threat-banner threat-{{ report.verdict.lower() }}">
+    <div class="threat-gauge-box">
+        <div class="score-circle">
+            <span class="score-number">{{ report.overall_score }}</span>
+            <span class="score-total">/100</span>
+        </div>
+    </div>
+    <div class="threat-summary-box">
+        <div class="threat-verdict-row">
+            <span class="badge {{ report.verdict_badge_class }} lg">{{ report.verdict }}</span>
+            <span class="threat-headline">Multi-Agent Consensus Verdict</span>
+        </div>
+        <p class="executive-summary">{{ report.threat_summary }}</p>
+        
+        {% if report.input_preview.url %}
+        <div class="preview-target">
+            <strong>Target URL:</strong> <code>{{ report.input_preview.url }}</code>
+        </div>
+        {% elif report.input_preview.subject or report.input_preview.sender %}
+        <div class="preview-target">
+            {% if report.input_preview.sender %}
+                <div><strong>Sender:</strong> <code>{{ report.input_preview.sender }}</code></div>
+            {% endif %}
+            {% if report.input_preview.subject %}
+                <div><strong>Subject:</strong> <code>{{ report.input_preview.subject }}</code></div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recommended Actions and Indicators Grid -->
+<div class="grid-2col">
+    <!-- Actionable Recommendations -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-list-check"></i> Recommended Mitigation Steps</h3>
+        </div>
+        <ul class="recommendation-list">
+            {% for rec in report.recommendations %}
+            <li class="rec-item">
+                <i class="fa-solid fa-shield-halved rec-icon"></i>
+                <span>{{ rec }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Identified Threat Indicators -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-triangle-exclamation"></i> Flagged Threat Indicators ({{ report.indicators|length }})</h3>
+        </div>
+        {% if report.indicators %}
+        <ul class="indicator-list">
+            {% for indicator in report.indicators %}
+            <li class="indicator-item">
+                <i class="fa-solid fa-circle-exclamation indicator-icon"></i>
+                <span>{{ indicator }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-circle-check text-success"></i>
+            <p>No anomalous indicators flagged across any security agent.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Agent Diagnostic Cards -->
+<div class="section-title">
+    <h2><i class="fa-solid fa-microchip"></i> Specialized Agent Diagnostic Breakdown</h2>
+</div>
+
+<div class="agent-breakdown-grid">
+    {% for agent_key, agent in report.agent_results.items() %}
+    <div class="card agent-diagnostic-card">
+        <div class="agent-card-top">
+            <div>
+                <h4>{{ agent.agent_name }}</h4>
+                <p class="agent-summary-text">{{ agent.summary }}</p>
+            </div>
+            <div class="agent-score-badge">
+                <span class="badge {{ agent.verdict|lower }}">{{ agent.verdict }}</span>
+                <span class="agent-score-val">{{ agent.score }}/100</span>
+            </div>
+        </div>
+
+        {% if agent.flags %}
+        <div class="agent-flags-list">
+            <strong>Agent Findings:</strong>
+            <ul>
+                {% for f in agent.flags %}
+                <li>{{ f }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Agent Specific Details -->
+        {% if agent_key == 'ml_agent' and agent.details.feature_contributions %}
+        <div class="feature-importance-box">
+            <strong>Explainable AI Feature Impact:</strong>
+            <div class="feature-bars">
+                {% for feat, pts in agent.details.feature_contributions.items() %}
+                <div class="feature-row">
+                    <span class="feat-name">{{ feat|replace('_', ' ')|title }}</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: {{ [pts * 2.5, 100]|min }}%;"></div>
+                    </div>
+                    <span class="feat-pts">+{{ pts }} pts</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% elif agent_key == 'header_agent' and agent.details %}
+        <div class="header-details-pills">
+            <span class="pill-detail">SPF: <strong>{{ agent.details.spf or 'N/A' }}</strong></span>
+            <span class="pill-detail">DKIM: <strong>{{ agent.details.dkim or 'N/A' }}</strong></span>
+            <span class="pill-detail">DMARC: <strong>{{ agent.details.dmarc or 'N/A' }}</strong></span>
+            {% if agent.details.reply_to != 'Not set' %}
+            <span class="pill-detail">Reply-To: <code>{{ agent.details.reply_to }}</code></span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

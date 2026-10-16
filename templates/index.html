@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-badge"><i class="fa-solid fa-microchip"></i> Multi-Agent Threat Intelligence Engine</div>
+    <h1 class="hero-title">Defend Against Phishing with Autonomous Security Agents</h1>
+    <p class="hero-subtitle">
+        PhishGuard employs an ensemble of specialized agents inspecting lexical domain entropy, social engineering cues, SPF/DKIM authentication, and statistical feature vectors.
+    </p>
+
+    <!-- Quick Demo Buttons -->
+    <div class="demo-samples-wrapper">
+        <span class="demo-label"><i class="fa-solid fa-flask"></i> Quick Demo Scenarios:</span>
+        <button type="button" class="btn-demo" onclick="loadSample('banking_phish')">
+            <i class="fa-solid fa-triangle-exclamation"></i> Suspicious Bank Alert
+        </button>
+        <button type="button" class="btn-demo" onclick="loadSample('malicious_url')">
+            <i class="fa-solid fa-link-slash"></i> Typosquatted URL Trap
+        </button>
+        <button type="button" class="btn-demo" onclick="loadSample('safe_email')">
+            <i class="fa-solid fa-circle-check"></i> Legitimate Security Report
+        </button>
+    </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">
+    <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+</div>
+{% endif %}
+
+<!-- Scanner Card -->
+<div class="card scanner-card">
+    <!-- Scanner Tabs -->
+    <div class="scanner-tabs">
+        <button class="tab-btn active" onclick="switchTab('url-tab')">
+            <i class="fa-solid fa-globe"></i> URL Inspector
+        </button>
+        <button class="tab-btn" onclick="switchTab('email-tab')">
+            <i class="fa-solid fa-envelope-open-text"></i> Email Body & Headers
+        </button>
+        <button class="tab-btn" onclick="switchTab('raw-tab')">
+            <i class="fa-solid fa-file-code"></i> Raw EML / RFC822
+        </button>
+    </div>
+
+    <!-- Tab 1: URL Scanner -->
+    <div id="url-tab" class="tab-content active">
+        <form action="{{ url_for('scan_url') }}" method="POST" class="scan-form">
+            <div class="form-group">
+                <label for="url_input" class="form-label">Target URL or Web Link</label>
+                <div class="input-with-icon">
+                    <i class="fa-solid fa-link input-icon"></i>
+                    <input type="text" id="url_input" name="url" class="form-control" placeholder="https://secure-login.paypa1-update.xyz/verify-auth" required>
+                </div>
+                <span class="form-hint">Evaluates domain age, typosquatting, entropy, punycode, TLD reputation, and parameter traps.</span>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-shield-virus"></i> Inspect URL Threat Level
+            </button>
+        </form>
+    </div>
+
+    <!-- Tab 2: Email Scanner -->
+    <div id="email-tab" class="tab-content">
+        <form action="{{ url_for('scan_email') }}" method="POST" class="scan-form">
+            <div class="form-row">
+                <div class="form-group col-half">
+                    <label for="sender_input" class="form-label">Sender (From Header)</label>
+                    <input type="text" id="sender_input" name="sender" class="form-control" placeholder="PayPal Security <support@paypa1-alert.com>">
+                </div>
+                <div class="form-group col-half">
+                    <label for="subject_input" class="form-label">Email Subject</label>
+                    <input type="text" id="subject_input" name="subject" class="form-control" placeholder="URGENT: Unauthorized access detected on your account">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="auth_input" class="form-label">Authentication Header (Optional: SPF, DKIM, DMARC)</label>
+                <input type="text" id="auth_input" name="auth_header" class="form-control" placeholder="spf=fail (sender IP unauthorized) dkim=fail">
+                <span class="form-hint">Paste raw Authentication-Results or Received-SPF headers to test sender legitimacy.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="body_input" class="form-label">Email Body Content (Text or HTML)</label>
+                <textarea id="body_input" name="body" class="form-control" rows="7" placeholder="Dear Customer, We have detected suspicious activity on your account. Please click here to verify your identity within 24 hours or your access will be suspended immediately..." required></textarea>
+                <span class="form-hint">Agents inspect urgency cues, credential harvesting keywords, impersonation, and link spoofing.</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Execute Multi-Agent Email Scan
+            </button>
+        </form>
+    </div>
+
+    <!-- Tab 3: Raw EML Scanner -->
+    <div id="raw-tab" class="tab-content">
+        <form action="{{ url_for('scan_raw') }}" method="POST" class="scan-form">
+            <div class="form-group">
+                <label for="raw_input" class="form-label">Raw Email Headers & Body (RFC822 / .eml)</label>
+                <textarea id="raw_input" name="raw_email" class="form-control code-font" rows="10" placeholder="From: security@chase-support.com&#10;To: target@victim.org&#10;Subject: Security Verification Required&#10;Authentication-Results: spf=fail dkim=none&#10;&#10;Dear Valued Customer, please confirm your card..." required></textarea>
+                <span class="form-hint">Paste full raw email source including headers for comprehensive header alignment and MIME analysis.</span>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-file-shield"></i> Parse & Scan Raw RFC822 Source
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Architecture Agents Showcase -->
+<div class="agents-grid">
+    <div class="agent-card">
+        <div class="agent-icon-wrapper icon-url"><i class="fa-solid fa-link"></i></div>
+        <h3>URL Security Inspector</h3>
+        <p>Detects typosquatting, Levenshtein distance against known brands, punycode IDNs, IP hosts, and URL shortener traps.</p>
+    </div>
+    <div class="agent-card">
+        <div class="agent-icon-wrapper icon-content"><i class="fa-solid fa-brain"></i></div>
+        <h3>Social Engineering Agent</h3>
+        <p>Analyzes urgency heuristics, artificial panic pressure, credential traps, fake prizes, and anchor-text-versus-href mismatches.</p>
+    </div>
+    <div class="agent-card">
+        <div class="agent-icon-wrapper icon-header"><i class="fa-solid fa-id-card-clip"></i></div>
+        <h3>Header & Auth Verifier</h3>
+        <p>Validates SPF alignment, DKIM signatures, DMARC policies, and detects From-vs-Reply-To sender spoofing.</p>
+    </div>
+    <div class="agent-card">
+        <div class="agent-icon-wrapper icon-ml"><i class="fa-solid fa-chart-line"></i></div>
+        <h3>Explainable ML Classifier</h3>
+        <p>Calculates multi-dimensional probabilistic threat vectors and reveals top feature attribution scores for full transparency.</p>
+    </div>
+</div>
+
+<!-- Recent Scans Table -->
+{% if recent_scans %}
+<div class="recent-scans-section">
+    <div class="section-header">
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</h2>
+        <a href="{{ url_for('history') }}" class="view-all-link">View Full Audit Log &rarr;</a>
+    </div>
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Scan ID</th>
+                    <th>Target / Snippet</th>
+                    <th>Threat Score</th>
+                    <th>Verdict</th>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scan in recent_scans %}
+                <tr>
+                    <td><code>{{ scan.scan_id }}</code></td>
+                    <td class="snippet-cell">
+                        {% if scan.input_preview.url %}
+                            <i class="fa-solid fa-globe text-muted"></i> {{ scan.input_preview.url }}
+                        {% elif scan.input_preview.subject %}
+                            <i class="fa-solid fa-envelope text-muted"></i> {{ scan.input_preview.subject }}
+                        {% else %}
+                            <i class="fa-solid fa-file-lines text-muted"></i> {{ scan.input_preview.body_snippet }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="score-pill score-{{ scan.verdict.lower() }}">{{ scan.overall_score }}/100</span>
+                    </td>
+                    <td>
+                        <span class="badge {{ scan.verdict_badge_class }}">{{ scan.verdict }}</span>
+                    </td>
+                    <td><small class="text-muted">{{ scan.timestamp }}</small></td>
+                    <td>
+                        <a href="{{ url_for('view_report', scan_id=scan.scan_id) }}" class="btn-sm btn-outline">
+                            View Report
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

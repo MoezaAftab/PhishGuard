@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="report-header">
+    <div>
+        <a href="{{ url_for('index') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Scanner</a>
+        <h1 class="report-title"><i class="fa-solid fa-clock-rotate-left"></i> Security Audit Log & Scan History</h1>
+        <p class="text-muted">Review previous security scans, agent assessments, and threat verdicts.</p>
+    </div>
+    {% if scans %}
+    <div class="report-actions">
+        <form action="{{ url_for('api_clear_history') }}" method="POST" onsubmit="return confirm('Are you sure you want to clear all scan history?');">
+            <button type="submit" class="btn btn-outline text-danger">
+                <i class="fa-solid fa-trash-can"></i> Clear History
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    {% if scans %}
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Scan ID</th>
+                    <th>Target / Input Preview</th>
+                    <th>Score</th>
+                    <th>Verdict</th>
+                    <th>Agents Executed</th>
+                    <th>Timestamp</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scan in scans %}
+                <tr>
+                    <td><code>{{ scan.scan_id }}</code></td>
+                    <td class="snippet-cell">
+                        {% if scan.input_preview.url %}
+                            <i class="fa-solid fa-globe text-muted"></i> {{ scan.input_preview.url }}
+                        {% elif scan.input_preview.subject %}
+                            <i class="fa-solid fa-envelope text-muted"></i> {{ scan.input_preview.subject }}
+                        {% else %}
+                            <i class="fa-solid fa-file-lines text-muted"></i> {{ scan.input_preview.body_snippet }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="score-pill score-{{ scan.verdict.lower() }}">{{ scan.overall_score }}/100</span>
+                    </td>
+                    <td>
+                        <span class="badge {{ scan.verdict_badge_class }}">{{ scan.verdict }}</span>
+                    </td>
+                    <td>
+                        <small>{{ scan.agent_results|length }} Agents</small>
+                    </td>
+                    <td>
+                        <small class="text-muted">{{ scan.timestamp }}</small>
+                    </td>
+                    <td class="action-buttons-cell">
+                        <a href="{{ url_for('view_report', scan_id=scan.scan_id) }}" class="btn-sm btn-outline">
+                            View
+                        </a>
+                        <a href="{{ url_for('export_report', scan_id=scan.scan_id) }}" class="btn-sm btn-outline" title="Export JSON">
+                            <i class="fa-solid fa-download"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fa-solid fa-folder-open empty-icon"></i>
+        <h3>No Scans Recorded Yet</h3>
+        <p>Run your first scan on a URL or email to see results logged here.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">
+            <i class="fa-solid fa-crosshairs"></i> Launch Scanner
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
