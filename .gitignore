@@ -38,6 +38,11 @@ venv.bak/
 .coverage
 htmlcov/
 
+# Local Database
+*.db
+phishguard.db
+
+
 # IDE
 .vscode/
 .idea/

@@ -47,6 +47,9 @@ PayPal Security Team`;
     } else if (scenario === 'malicious_url') {
         switchTab('url-tab');
         document.getElementById('url_input').value = 'http://secure-login.paypa1-update.xyz/verify-account?auth=login&token=981240';
+    } else if (scenario === 'threat_intel_dns') {
+        switchTab('url-tab');
+        document.getElementById('url_input').value = 'https://emergency-banking-restore.duckdns.org/auth/login';
     } else if (scenario === 'safe_email') {
         switchTab('email-tab');
         document.getElementById('sender_input').value = 'Jane Miller <jane.miller@company.org>';

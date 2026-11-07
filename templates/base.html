@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}PhishGuard - Multi-Agent Phishing Detection Platform{% endblock %}</title>
-    <!-- FontAwesome & Fonts -->
+    <!-- FontAwesome & Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,17 +18,23 @@
             <a href="{{ url_for('index') }}" class="nav-brand">
                 <span class="brand-icon"><i class="fa-solid fa-shield-halved"></i></span>
                 <span class="brand-text">Phish<span class="brand-accent">Guard</span></span>
-                <span class="badge-agent-count">4 Agents Active</span>
+                <span class="badge-agent-count"><i class="fa-solid fa-microchip"></i> 5 Agents Active</span>
+                <span class="badge-db-status" title="Active Storage Engine: {{ db_info.location }}">
+                    <i class="fa-solid fa-database"></i> {{ db_info.engine }}
+                </span>
             </a>
             <div class="nav-links">
                 <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
                     <i class="fa-solid fa-crosshairs"></i> Scanner
                 </a>
                 <a href="{{ url_for('history') }}" class="nav-link {% if request.endpoint == 'history' %}active{% endif %}">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Scan Audit Log
+                    <i class="fa-solid fa-clock-rotate-left"></i> Audit Log
+                </a>
+                <a href="{{ url_for('api_docs') }}" class="nav-link {% if request.endpoint == 'api_docs' %}active{% endif %}">
+                    <i class="fa-solid fa-code"></i> API Explorer
                 </a>
                 <a href="{{ url_for('api_health') }}" target="_blank" class="nav-link">
-                    <i class="fa-solid fa-network-wired"></i> API
+                    <i class="fa-solid fa-heart-pulse"></i> Health
                 </a>
             </div>
         </div>
@@ -43,11 +49,11 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><strong>PhishGuard Multi-Agent System</strong> &copy; 2026. Real-time Threat Intelligence & Behavioral Defense.</p>
-                <p class="footer-subtext">Engineered with specialized URL, Natural Language, Header Authentication, and Explainable ML agents.</p>
+                <p><strong>PhishGuard Multi-Agent Defense Architecture</strong> &copy; 2026. Production Security & OSINT Platform.</p>
+                <p class="footer-subtext">5 Autonomous Agents: URL Security Inspector, Social Engineering Analyst, Header & Auth Verifier, Threat Intel & DNS Verifier, and Explainable ML Classifier.</p>
             </div>
             <div class="footer-status">
-                <span class="status-indicator"></span> Pipeline Online
+                <span class="status-indicator"></span> 5 Agents & {{ db_info.engine }} Online
             </div>
         </div>
     </footer>

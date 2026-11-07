@@ -1,6 +1,6 @@
 """
 PhishGuard Multi-Agent Orchestrator
-Coordinates specialized security agents, synthesizes findings, resolves conflicts,
+Coordinates 5 specialized autonomous security agents, synthesizes findings, resolves conflicts,
 computes ensemble threat scores, and generates actionable user advisories.
 """
 
@@ -12,27 +12,30 @@ from .base_agent import AgentResult, BaseAgent
 from .url_agent import UrlAgent
 from .content_agent import ContentAgent
 from .header_agent import HeaderAgent
+from .threat_intel_agent import ThreatIntelAgent
 from .ml_agent import MLAgent
 
 
 class PhishGuardOrchestrator:
-    """Supervisory orchestrator coordinating the multi-agent detection pipeline."""
+    """Supervisory orchestrator coordinating the 5-agent detection pipeline."""
 
     def __init__(self):
         self.url_agent = UrlAgent(weight=1.2)
         self.content_agent = ContentAgent(weight=1.1)
         self.header_agent = HeaderAgent(weight=1.3)
+        self.threat_intel_agent = ThreatIntelAgent(weight=1.25)
         self.ml_agent = MLAgent(weight=1.0)
         self.agents: List[BaseAgent] = [
             self.url_agent,
             self.content_agent,
             self.header_agent,
+            self.threat_intel_agent,
             self.ml_agent,
         ]
 
     def scan(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute full multi-agent scan across target payload.
+        Execute full multi-agent scan across target payload using all 5 agents.
         
         Args:
             payload: Dict with any combination of 'url', 'body', 'subject', 'headers', 'raw_email'
@@ -51,33 +54,41 @@ class PhishGuardOrchestrator:
         active_weights: Dict[str, float] = {}
         all_flags: List[str] = []
 
-        # Determine which agents are relevant
+        # Determine which context vectors are active
         has_url = bool(processed_data.get("url") or ("http" in processed_data.get("body", "")))
         has_content = bool(processed_data.get("body") or processed_data.get("subject"))
         has_headers = bool(processed_data.get("headers"))
 
-        # URL Agent
+        # Agent 1: URL Security Inspector
         if has_url:
             res = self.url_agent.analyze(processed_data)
             agent_results["url_agent"] = res
             active_weights["url_agent"] = self.url_agent.weight
             all_flags.extend(res.flags)
 
-        # Content Agent
+        # Agent 2: Social Engineering & Content Agent
         if has_content:
             res = self.content_agent.analyze(processed_data)
             agent_results["content_agent"] = res
             active_weights["content_agent"] = self.content_agent.weight
             all_flags.extend(res.flags)
 
-        # Header Agent
+        # Agent 3: Header & Authentication Verifier
         if has_headers:
             res = self.header_agent.analyze(processed_data)
             agent_results["header_agent"] = res
             active_weights["header_agent"] = self.header_agent.weight
             all_flags.extend(res.flags)
 
-        # ML Agent (always runs on available context)
+        # Agent 4: Threat Intelligence & DNS Infrastructure Agent
+        # Runs whenever there is a URL, email domain, or network target
+        if has_url or has_headers or processed_data.get("domain"):
+            ti_res = self.threat_intel_agent.analyze(processed_data)
+            agent_results["threat_intel_agent"] = ti_res
+            active_weights["threat_intel_agent"] = self.threat_intel_agent.weight
+            all_flags.extend(ti_res.flags)
+
+        # Agent 5: ML Heuristic & Explainable Classifier (always evaluates cross-modal context)
         ml_res = self.ml_agent.analyze(processed_data)
         agent_results["ml_agent"] = ml_res
         active_weights["ml_agent"] = self.ml_agent.weight
@@ -113,6 +124,7 @@ class PhishGuardOrchestrator:
             "verdict": overall_verdict,
             "verdict_badge_class": self._verdict_to_badge_class(overall_verdict),
             "threat_summary": self._generate_executive_summary(overall_verdict, final_score, clean_indicators),
+            "agents_executed_count": len(agent_results),
             "agent_results": {k: v.to_dict() for k, v in agent_results.items()},
             "indicators": clean_indicators,
             "recommendations": recommendations,
@@ -192,9 +204,9 @@ class PhishGuardOrchestrator:
         elif verdict == "SUSPICIOUS":
             return f"Suspicious activity observed ({score}/100). Contains {len(indicators)} risk factor(s) that resemble phishing behavior."
         elif verdict == "HIGH_RISK":
-            return f"High risk phishing threat ({score}/100). Significant social engineering or deceptive domain attributes detected."
+            return f"High risk phishing threat ({score}/100). Significant social engineering, domain spoofing, or infrastructure anomalies detected."
         else:
-            return f"CRITICAL PHISHING ATTACK DETECTED ({score}/100). Severe credential harvesting, domain spoofing, or authentication failure present."
+            return f"CRITICAL PHISHING ATTACK DETECTED ({score}/100). Severe credential harvesting, domain spoofing, authentication failure, or malicious infrastructure present."
 
     def _generate_recommendations(self, verdict: str, indicators: List[str], data: Dict[str, Any]) -> List[str]:
         recs = []
@@ -203,7 +215,7 @@ class PhishGuardOrchestrator:
             recs.append("Do NOT submit any passwords, MFA codes, or financial credentials.")
             recs.append("Report and quarantine this message in your organization's email security gateway.")
             if data.get("url"):
-                recs.append("Add the target domain/IP to network firewall and DNS blocklists.")
+                recs.append("Add the target domain/IP to network firewall, EDR, and DNS blocklists.")
         elif verdict == "SUSPICIOUS":
             recs.append("Exercise heightened caution. Verify the sender through an independent, verified out-of-band channel.")
             recs.append("Check link destinations by inspecting full URLs without clicking.")

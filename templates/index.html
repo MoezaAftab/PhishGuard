@@ -2,10 +2,10 @@
 
 {% block content %}
 <div class="hero-section">
-    <div class="hero-badge"><i class="fa-solid fa-microchip"></i> Multi-Agent Threat Intelligence Engine</div>
+    <div class="hero-badge"><i class="fa-solid fa-microchip"></i> Multi-Agent Threat Intelligence Engine &bull; 5 Autonomous Agents</div>
     <h1 class="hero-title">Defend Against Phishing with Autonomous Security Agents</h1>
     <p class="hero-subtitle">
-        PhishGuard employs an ensemble of specialized agents inspecting lexical domain entropy, social engineering cues, SPF/DKIM authentication, and statistical feature vectors.
+        PhishGuard coordinates 5 specialized agents inspecting domain entropy, psychological social engineering cues, SPF/DKIM authentication, live DNS infrastructure, and statistical ML risk attribution.
     </p>
 
     <!-- Quick Demo Buttons -->
@@ -17,15 +17,44 @@
         <button type="button" class="btn-demo" onclick="loadSample('malicious_url')">
             <i class="fa-solid fa-link-slash"></i> Typosquatted URL Trap
         </button>
+        <button type="button" class="btn-demo" onclick="loadSample('threat_intel_dns')">
+            <i class="fa-solid fa-network-wired"></i> Dynamic DNS & Free Host Trap
+        </button>
         <button type="button" class="btn-demo" onclick="loadSample('safe_email')">
             <i class="fa-solid fa-circle-check"></i> Legitimate Security Report
         </button>
     </div>
 </div>
 
+<!-- Aggregate Intelligence Stats Bar -->
+{% if stats and stats.total_scans > 0 %}
+<div class="stats-overview-grid">
+    <div class="stat-card">
+        <span class="stat-val">{{ stats.total_scans }}</span>
+        <span class="stat-lbl"><i class="fa-solid fa-magnifying-glass"></i> Total Scans</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-val text-success">{{ stats.safe_count }}</span>
+        <span class="stat-lbl"><i class="fa-solid fa-shield-check"></i> Clean / Safe</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-val text-warning">{{ stats.suspicious_count }}</span>
+        <span class="stat-lbl"><i class="fa-solid fa-triangle-exclamation"></i> Suspicious</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-val text-danger">{{ stats.critical_count }}</span>
+        <span class="stat-lbl"><i class="fa-solid fa-biohazard"></i> High / Critical</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-val">{{ stats.avg_score }}/100</span>
+        <span class="stat-lbl"><i class="fa-solid fa-chart-line"></i> Avg Risk Score</span>
+    </div>
+</div>
+{% endif %}
+
 {% if error %}
 <div class="alert alert-danger">
-    <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+    <i class="fa-solid fa-shield-halved"></i> {{ error }}
 </div>
 {% endif %}
 
@@ -47,13 +76,14 @@
     <!-- Tab 1: URL Scanner -->
     <div id="url-tab" class="tab-content active">
         <form action="{{ url_for('scan_url') }}" method="POST" class="scan-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="url_input" class="form-label">Target URL or Web Link</label>
                 <div class="input-with-icon">
                     <i class="fa-solid fa-link input-icon"></i>
                     <input type="text" id="url_input" name="url" class="form-control" placeholder="https://secure-login.paypa1-update.xyz/verify-auth" required>
                 </div>
-                <span class="form-hint">Evaluates domain age, typosquatting, entropy, punycode, TLD reputation, and parameter traps.</span>
+                <span class="form-hint">Evaluates domain age, typosquatting, entropy, punycode, TLD reputation, SSRF filters, and parameter traps.</span>
             </div>
             <button type="submit" class="btn btn-primary btn-lg">
                 <i class="fa-solid fa-shield-virus"></i> Inspect URL Threat Level
@@ -64,6 +94,7 @@
     <!-- Tab 2: Email Scanner -->
     <div id="email-tab" class="tab-content">
         <form action="{{ url_for('scan_email') }}" method="POST" class="scan-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-row">
                 <div class="form-group col-half">
                     <label for="sender_input" class="form-label">Sender (From Header)</label>
@@ -88,7 +119,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary btn-lg">
-                <i class="fa-solid fa-magnifying-glass-chart"></i> Execute Multi-Agent Email Scan
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Execute 5-Agent Email Scan
             </button>
         </form>
     </div>
@@ -96,6 +127,7 @@
     <!-- Tab 3: Raw EML Scanner -->
     <div id="raw-tab" class="tab-content">
         <form action="{{ url_for('scan_raw') }}" method="POST" class="scan-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="raw_input" class="form-label">Raw Email Headers & Body (RFC822 / .eml)</label>
                 <textarea id="raw_input" name="raw_email" class="form-control code-font" rows="10" placeholder="From: security@chase-support.com&#10;To: target@victim.org&#10;Subject: Security Verification Required&#10;Authentication-Results: spf=fail dkim=none&#10;&#10;Dear Valued Customer, please confirm your card..." required></textarea>
@@ -108,26 +140,34 @@
     </div>
 </div>
 
-<!-- Architecture Agents Showcase -->
+<!-- Architecture Agents Showcase (5 Autonomous Agents) -->
+<div class="section-title">
+    <h2><i class="fa-solid fa-microchip"></i> 5 Autonomous Security Agents Working in Ensemble</h2>
+</div>
 <div class="agents-grid">
     <div class="agent-card">
         <div class="agent-icon-wrapper icon-url"><i class="fa-solid fa-link"></i></div>
-        <h3>URL Security Inspector</h3>
+        <h3>1. URL Security Inspector</h3>
         <p>Detects typosquatting, Levenshtein distance against known brands, punycode IDNs, IP hosts, and URL shortener traps.</p>
     </div>
     <div class="agent-card">
         <div class="agent-icon-wrapper icon-content"><i class="fa-solid fa-brain"></i></div>
-        <h3>Social Engineering Agent</h3>
+        <h3>2. Social Engineering Analyst</h3>
         <p>Analyzes urgency heuristics, artificial panic pressure, credential traps, fake prizes, and anchor-text-versus-href mismatches.</p>
     </div>
     <div class="agent-card">
         <div class="agent-icon-wrapper icon-header"><i class="fa-solid fa-id-card-clip"></i></div>
-        <h3>Header & Auth Verifier</h3>
+        <h3>3. Header & Auth Verifier</h3>
         <p>Validates SPF alignment, DKIM signatures, DMARC policies, and detects From-vs-Reply-To sender spoofing.</p>
     </div>
     <div class="agent-card">
+        <div class="agent-icon-wrapper icon-threat"><i class="fa-solid fa-network-wired"></i></div>
+        <h3>4. Threat Intel & DNS Verifier</h3>
+        <p>Verifies MX mail exchanger records, resolves DNS A records, detects dynamic DNS/tunneling abuse, and flags private IP SSRF traps.</p>
+    </div>
+    <div class="agent-card">
         <div class="agent-icon-wrapper icon-ml"><i class="fa-solid fa-chart-line"></i></div>
-        <h3>Explainable ML Classifier</h3>
+        <h3>5. Explainable ML Classifier</h3>
         <p>Calculates multi-dimensional probabilistic threat vectors and reveals top feature attribution scores for full transparency.</p>
     </div>
 </div>

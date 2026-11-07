@@ -8,6 +8,7 @@
         <div class="report-meta">
             <span><strong>Scan ID:</strong> <code>{{ report.scan_id }}</code></span>
             <span><strong>Generated:</strong> {{ report.timestamp }}</span>
+            <span><strong>Agents Consulted:</strong> {{ report.agent_results|length }} Autonomous Agents</span>
         </div>
     </div>
     <div class="report-actions">
@@ -34,7 +35,7 @@
     <div class="threat-summary-box">
         <div class="threat-verdict-row">
             <span class="badge {{ report.verdict_badge_class }} lg">{{ report.verdict }}</span>
-            <span class="threat-headline">Multi-Agent Consensus Verdict</span>
+            <span class="threat-headline">5-Agent Consensus Verdict</span>
         </div>
         <p class="executive-summary">{{ report.threat_summary }}</p>
         
@@ -95,9 +96,9 @@
     </div>
 </div>
 
-<!-- Agent Diagnostic Cards -->
+<!-- 5-Agent Diagnostic Cards -->
 <div class="section-title">
-    <h2><i class="fa-solid fa-microchip"></i> Specialized Agent Diagnostic Breakdown</h2>
+    <h2><i class="fa-solid fa-microchip"></i> Autonomous Agent Diagnostic Breakdown ({{ report.agent_results|length }} Agents)</h2>
 </div>
 
 <div class="agent-breakdown-grid">
@@ -126,7 +127,34 @@
         {% endif %}
 
         <!-- Agent Specific Details -->
-        {% if agent_key == 'ml_agent' and agent.details.feature_contributions %}
+        {% if agent_key == 'threat_intel_agent' and agent.details %}
+        <div class="threat-intel-details-box">
+            <strong>DNS & Threat Intelligence Findings:</strong>
+            <div class="header-details-pills mt-2">
+                {% if agent.details.virustotal_queried %}
+                <span class="pill-detail"><i class="fa-solid fa-shield-virus"></i> VirusTotal Feed: <strong>Active</strong></span>
+                {% endif %}
+                {% if agent.details.domains_inspected %}
+                    {% for d in agent.details.domains_inspected %}
+                    <span class="pill-detail"><i class="fa-solid fa-globe"></i> Domain: <code>{{ d.domain }}</code></span>
+                    {% if d.has_a is not none %}
+                    <span class="pill-detail">DNS A: <strong>{{ "Resolves" if d.has_a else "NXDOMAIN / Failed" }}</strong></span>
+                    {% endif %}
+                    {% if d.has_mx is not none %}
+                    <span class="pill-detail">MX Mail: <strong>{{ "Configured" if d.has_mx else "Missing" }}</strong></span>
+                    {% endif %}
+                    {% if d.is_dynamic_dns %}
+                    <span class="pill-detail text-warning"><i class="fa-solid fa-triangle-exclamation"></i> Dynamic DNS Detected</span>
+                    {% endif %}
+                    {% if d.is_private_ip %}
+                    <span class="pill-detail text-danger"><i class="fa-solid fa-ban"></i> Private / SSRF IP</span>
+                    {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        {% elif agent_key == 'ml_agent' and agent.details.feature_contributions %}
         <div class="feature-importance-box">
             <strong>Explainable AI Feature Impact:</strong>
             <div class="feature-bars">
@@ -141,6 +169,7 @@
                 {% endfor %}
             </div>
         </div>
+
         {% elif agent_key == 'header_agent' and agent.details %}
         <div class="header-details-pills">
             <span class="pill-detail">SPF: <strong>{{ agent.details.spf or 'N/A' }}</strong></span>

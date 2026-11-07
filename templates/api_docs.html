@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="report-header">
+    <div>
+        <a href="{{ url_for('index') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Scanner</a>
+        <h1 class="report-title"><i class="fa-solid fa-code"></i> REST API Documentation & Playground</h1>
+        <p class="text-muted">Direct programmatic access to each of PhishGuard's 5 autonomous agents and ensemble pipeline.</p>
+    </div>
+    <div class="report-actions">
+        <a href="{{ url_for('api_health') }}" target="_blank" class="btn btn-outline">
+            <i class="fa-solid fa-heart-pulse"></i> Check Health JSON
+        </a>
+    </div>
+</div>
+
+<div class="api-grid">
+    <!-- Endpoint 1: Unified 5-Agent Pipeline -->
+    <div class="card api-card">
+        <div class="api-method-badge post">POST</div>
+        <div class="api-path"><code>/api/v1/scan</code></div>
+        <p class="api-desc">Runs the complete 5-agent ensemble across URLs, email content, and RFC822 headers. Saves report into <strong>{{ db_status.engine }}</strong>.</p>
+        
+        <div class="code-snippet-box">
+            <span class="snippet-title">Example Request Body (JSON)</span>
+            <pre><code>{
+  "url": "http://secure-login.paypa1-update.xyz/verify",
+  "subject": "URGENT: Account Suspension Notice",
+  "body": "Dear customer, click here within 24 hours to update your billing details.",
+  "headers": {
+    "From": "Security Desk <alert@paypa1-update.xyz>",
+    "Authentication-Results": "spf=fail dkim=fail"
+  }
+}</code></pre>
+        </div>
+
+        <div class="code-snippet-box">
+            <span class="snippet-title">cURL Example</span>
+            <pre><code>curl -X POST http://localhost:5000/api/v1/scan \
+  -H "Content-Type: application/json" \
+  -d '{"url": "http://paypa1.xyz"}'</code></pre>
+        </div>
+    </div>
+
+    <!-- Endpoint 2: Agent 1 (URL Security Inspector) -->
+    <div class="card api-card">
+        <div class="api-method-badge post">POST</div>
+        <div class="api-path"><code>/api/v1/agents/url</code></div>
+        <p class="api-desc">Invokes <strong>Agent 1: URL Security Inspector</strong> for typosquatting, domain entropy, punycode, and lexical analysis.</p>
+        
+        <div class="code-snippet-box">
+            <span class="snippet-title">Request Body</span>
+            <pre><code>{
+  "url": "http://192.168.1.50/login"
+}</code></pre>
+        </div>
+    </div>
+
+    <!-- Endpoint 3: Agent 2 (Social Engineering & Content Agent) -->
+    <div class="card api-card">
+        <div class="api-method-badge post">POST</div>
+        <div class="api-path"><code>/api/v1/agents/content</code></div>
+        <p class="api-desc">Invokes <strong>Agent 2: Social Engineering Analyst</strong> to detect urgency cues, credential traps, and fake incentives.</p>
+        
+        <div class="code-snippet-box">
+            <span class="snippet-title">Request Body</span>
+            <pre><code>{
+  "subject": "URGENT: Confirm Your Identity",
+  "body": "Your bank card has been frozen. Enter password now."
+}</code></pre>
+        </div>
+    </div>
+
+    <!-- Endpoint 4: Agent 3 (Header & Authentication Verifier) -->
+    <div class="card api-card">
+        <div class="api-method-badge post">POST</div>
+        <div class="api-path"><code>/api/v1/agents/header</code></div>
+        <p class="api-desc">Invokes <strong>Agent 3: Header & Authentication Verifier</strong> to validate SPF, DKIM, DMARC, and From-vs-Reply-To alignment.</p>
+        
+        <div class="code-snippet-box">
+            <span class="snippet-title">Request Body</span>
+            <pre><code>{
+  "headers": {
+    "From": "Support <support@paypal.com>",
+    "Reply-To": "hacker@evil.ru",
+    "Authentication-Results": "spf=fail dkim=fail"
+  }
+}</code></pre>
+        </div>
+    </div>
+
+    <!-- Endpoint 5: Agent 4 (Threat Intelligence & DNS Verifier) -->
+    <div class="card api-card">
+        <div class="api-method-badge post">POST</div>
+        <div class="api-path"><code>/api/v1/agents/threat-intel</code></div>
+        <p class="api-desc">Invokes <strong>Agent 4: Threat Intelligence & DNS Verifier</strong> for live MX record checks, DNS A records, dynamic DNS, and SSRF prevention.</p>
+        
+        <div class="code-snippet-box">
+            <span class="snippet-title">Request Body</span>
+            <pre><code>{
+  "url": "http://subdomain.duckdns.org/payload"
+}</code></pre>
+        </div>
+    </div>
+
+    <!-- Endpoint 6: Agent 5 (ML Heuristic & Explainable Classifier) -->
+    <div class="card api-card">
+        <div class="api-method-badge post">POST</div>
+        <div class="api-path"><code>/api/v1/agents/ml</code></div>
+        <p class="api-desc">Invokes <strong>Agent 5: Explainable ML Classifier</strong> to compute statistical threat vectors and feature importance attribution.</p>
+        
+        <div class="code-snippet-box">
+            <span class="snippet-title">Request Body</span>
+            <pre><code>{
+  "url": "http://paypa1-update.xyz/verify",
+  "body": "Immediate verification required."
+}</code></pre>
+        </div>
+    </div>
+
+    <!-- Endpoint 7: Database Scans & Audit Log Query -->
+    <div class="card api-card">
+        <div class="api-method-badge get">GET</div>
+        <div class="api-path"><code>/api/v1/scans?limit=20</code></div>
+        <p class="api-desc">Retrieves list of past threat assessments saved in <strong>{{ db_status.engine }}</strong>.</p>
+    </div>
+
+    <!-- Endpoint 8: Single Scan Report Query -->
+    <div class="card api-card">
+        <div class="api-method-badge get">GET</div>
+        <div class="api-path"><code>/api/v1/scans/&lt;scan_id&gt;</code></div>
+        <p class="api-desc">Retrieves complete assessment report JSON by its unique identifier.</p>
+    </div>
+
+    <!-- Endpoint 9: Threat Intelligence Aggregate Statistics -->
+    <div class="card api-card">
+        <div class="api-method-badge get">GET</div>
+        <div class="api-path"><code>/api/v1/stats</code></div>
+        <p class="api-desc">Returns aggregate statistics: total scans, safe count, critical count, and average threat score.</p>
+    </div>
+
+    <!-- Endpoint 10: Health Check -->
+    <div class="card api-card">
+        <div class="api-method-badge get">GET</div>
+        <div class="api-path"><code>/api/v1/health</code></div>
+        <p class="api-desc">Returns operational status of all 5 security agents and the connected database engine.</p>
+    </div>
+</div>
+{% endblock %}
